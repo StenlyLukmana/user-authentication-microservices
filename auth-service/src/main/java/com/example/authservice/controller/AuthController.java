@@ -1,0 +1,55 @@
+package com.example.authservice.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.authservice.dto.LoginRequestDto;
+import com.example.authservice.dto.LoginResponseDto;
+import com.example.authservice.dto.RegisterRequestDto;
+import com.example.authservice.dto.RegisterResponseDto;
+import com.example.authservice.dto.UpdateProfileRequestDto;
+import com.example.authservice.dto.UpdateProfileResponseDto;
+import com.example.authservice.dto.ViewProfileRequestDto;
+import com.example.authservice.dto.ViewProfileResponseDto;
+import com.example.authservice.service.AuthService;
+
+import jakarta.validation.Valid;
+
+@Validated
+@RestController
+@RequestMapping("/auth")
+public class AuthController {
+    
+    @Autowired
+    private AuthService authservice;
+
+    @PostMapping("/register")
+    public RegisterResponseDto register(@Valid @RequestBody RegisterRequestDto requestDto){
+        return authservice.register(requestDto);
+    }
+
+    @PostMapping("/login")
+    public LoginResponseDto login(@Valid @RequestBody LoginRequestDto requestDto) {
+        return authservice.login(requestDto);
+    }
+
+    @GetMapping("/profile")
+    public ViewProfileResponseDto viewProfile(@RequestHeader("Authorization") String token) {
+        ViewProfileRequestDto requestDto = new ViewProfileRequestDto();
+        requestDto.setToken(token);
+        return authservice.viewProfile(requestDto);
+    }
+
+    @PostMapping("/update")
+    public UpdateProfileResponseDto updateProfile(@RequestHeader("Authorization") String token, @Valid @RequestBody UpdateProfileRequestDto requestDto) {
+        requestDto.setToken(token);
+        return authservice.updateProfile(requestDto);
+    }
+
+}
