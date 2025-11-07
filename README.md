@@ -77,6 +77,12 @@ spring:
       ddl-auto: update
 ```
 ### 3. Run Each Service
+#### 📓 Note: In order to run the project in Visual Studio Code and test the services in Postman, make sure the proper extensions and softwares are installed
+- Visual Code Extensions: <a href="https://marketplace.visualstudio.com/items?itemName=vmware.vscode-boot-dev-pack">Spring Boot Extension Pack</a>
+- API Testing (Postman): <a href="https://learning.postman.com/docs/getting-started/installation/installation-and-updates/">Installation Guide<a/>
+#### Once the Spring Boot Extension Pack has been installed, services can be run via command terminal (ctrl+`) or via Spring Boot Dashboard (icon available in VSC sidebar).
+##### 🚉 Command terminal
+Run the following commands in different command terminals.
 auth-service
 ```text
 cd auth-service
@@ -87,6 +93,10 @@ user-service
 cd user-service
 ./gradlew bootRun
 ```
+##### ▶️ Spring Boot Dashboard
+Click on the run button in the Apps section.
+<img width="200" height="300" alt="image" src="https://github.com/user-attachments/assets/cb5d3f48-5743-4816-8ee1-1d5df44a7363" />
+
 
 
 ---
@@ -223,9 +233,3 @@ Other endpoints in user-services can also be directly tested, but are completely
 **Stenly Lukmana**<br>
 Computer Science Student @ BINUS University<br>
 Interested in Cybersecurity and Backend Development
-
----
-
-
-## 📜 License
-This project is for educational and assessment purposes only.
