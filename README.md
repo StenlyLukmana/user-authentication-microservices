@@ -220,8 +220,8 @@ Other endpoints in user-services can also be directly tested, but are completely
 
 
 ## 🐉 Author
-**Stenly Lukmana**
-Computer Science Student @ BINUS University
+**Stenly Lukmana**<br>
+Computer Science Student @ BINUS University<br>
 Interested in Cybersecurity and Backend Development
 
 ---
