@@ -45,7 +45,7 @@ git clone https://github.com/StenlyLukmana/user-authentication-microservices.git
 cd user-authentication-microservices
 ```
 ### 2. Configure Application Settings
-Both auth-service and user-service already includes an H2 configuration inside.
+Both auth-service and user-service already includes an H2 configuration inside.<br>
 auth-service/src/main/resources/application.yml
 ```text
 server:
