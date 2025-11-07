@@ -94,9 +94,8 @@ cd user-service
 ./gradlew bootRun
 ```
 ##### ▶️ Spring Boot Dashboard
-Click on the run button in the Apps section.
-<img width="200" height="300" alt="image" src="https://github.com/user-attachments/assets/cb5d3f48-5743-4816-8ee1-1d5df44a7363" />
-
+Click on the run button in the Apps section.<br>
+<img width="300" height="400" alt="image" src="https://github.com/user-attachments/assets/aaf68736-80ad-4c58-92bd-1f4397c957b0" />
 
 
 ---
