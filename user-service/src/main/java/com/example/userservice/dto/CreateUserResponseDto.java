@@ -9,5 +9,5 @@ public class CreateUserResponseDto {
     
     private boolean result;
     private UserDto user;
-    
+
 }

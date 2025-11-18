@@ -15,8 +15,8 @@ public class RegisterRequestDto {
     private String username;
 
     @NotBlank
-    @Size(min = 8, message = "Username must be at least 8 characters")
-    @Pattern(regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@#$%^&+=!])$", message = "Must contain uppercase, lowercase, and symbols.")
+    @Size(min = 8, message = "Must be at least 8 characters long")
+    @Pattern(regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@#$%^&+=!])$", message = "Weak password")
     private String password;
     
     @NotBlank

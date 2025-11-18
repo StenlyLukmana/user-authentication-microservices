@@ -12,5 +12,5 @@ public class UpdateProfileResponseDto {
     private String name;
     private Integer age;
     private Long updatedAt;
-
+    
 }
