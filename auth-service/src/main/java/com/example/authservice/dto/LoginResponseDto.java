@@ -1,24 +1,13 @@
 package com.example.authservice.dto;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class LoginResponseDto {
     
     private boolean result;
     private String token;
-
-    public boolean getResult() {
-        return this.result;
-    }
-
-    public void setResult(boolean result) {
-        this.result = result;
-    }
-
-    public String getToken() {
-        return this.token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
 
 }
