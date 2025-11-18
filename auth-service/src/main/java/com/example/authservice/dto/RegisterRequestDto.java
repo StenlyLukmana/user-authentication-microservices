@@ -12,6 +12,10 @@ public class RegisterRequestDto {
     private String username;
 
     @NotBlank
+    @Pattern(
+        regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@#$%^&+=!]).{8,}$",
+        message = "Weak password"
+    )
     private String password;
 
     @NotBlank
