@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.authservice.dto.LoginRequestDto;
 import com.example.authservice.dto.LoginResponseDto;
+import com.example.authservice.dto.RefreshAccessTokenRequestDto;
+import com.example.authservice.dto.RefreshAccessTokenResponseDto;
 import com.example.authservice.dto.RegisterRequestDto;
 import com.example.authservice.dto.RegisterResponseDto;
 import com.example.authservice.dto.UpdateProfileRequestDto;
@@ -29,6 +31,11 @@ public class AuthController {
     @Autowired
     private AuthService authservice;
 
+    @PostMapping("/refresh")
+    public RefreshAccessTokenResponseDto refreshAccessToken(@Valid @RequestBody RefreshAccessTokenRequestDto requestDto) {
+        return authservice.refreshAccessToken(requestDto);
+    }
+
     @PostMapping("/register")
     public RegisterResponseDto register(@Valid @RequestBody RegisterRequestDto requestDto){
         return authservice.register(requestDto);
@@ -42,13 +49,13 @@ public class AuthController {
     @GetMapping("/profile")
     public ViewProfileResponseDto viewProfile(@RequestHeader("Authorization") String token) {
         ViewProfileRequestDto requestDto = new ViewProfileRequestDto();
-        requestDto.setToken(token);
+        requestDto.setAccessToken(token);
         return authservice.viewProfile(requestDto);
     }
 
     @PostMapping("/update")
     public UpdateProfileResponseDto updateProfile(@RequestHeader("Authorization") String token, @Valid @RequestBody UpdateProfileRequestDto requestDto) {
-        requestDto.setToken(token);
+        requestDto.setAccessToken(token);
         return authservice.updateProfile(requestDto);
     }
 

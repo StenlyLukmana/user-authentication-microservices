@@ -29,6 +29,17 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    private Long nowInEpochMicroSecond() {
+        return ChronoUnit.MICROS.between(Instant.EPOCH, Instant.now());
+    }
+
+    private UserDto convertUserToUserDto(User user) {
+        UserDto userDto = new UserDto();
+        BeanUtils.copyProperties(user, userDto);
+
+        return userDto;
+    }
+
     @Override
     public CreateUserResponseDto createUser(CreateUserRequestDto requestDto) {
         User user = new User();
@@ -99,17 +110,6 @@ public class UserServiceImpl implements UserService {
         responseDto.setUser(convertUserToUserDto(user));
 
         return responseDto;
-    }
-    
-    private Long nowInEpochMicroSecond() {
-        return ChronoUnit.MICROS.between(Instant.EPOCH, Instant.now());
-    }
-
-    private UserDto convertUserToUserDto(User user) {
-        UserDto userDto = new UserDto();
-        BeanUtils.copyProperties(user, userDto);
-
-        return userDto;
     }
 
 }

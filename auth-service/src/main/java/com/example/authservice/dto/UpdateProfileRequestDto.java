@@ -7,7 +7,7 @@ import lombok.Setter;
 @Setter
 public class UpdateProfileRequestDto {
     
-    private String token;
+    private String accessToken;
     private String username;
     private String email;
     private String name;

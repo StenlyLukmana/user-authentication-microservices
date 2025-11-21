@@ -16,6 +16,7 @@ import io.jsonwebtoken.security.Keys;
 public class JwtUtil {
 
     private final Key secret;
+
     private final Long expiration;
 
     public JwtUtil(@Value("${jwt.secret}") String secret, @Value("${jwt.expiration}") Long expiration) {
@@ -23,11 +24,11 @@ public class JwtUtil {
         this.expiration = expiration;
     }
 
-    public String generateToken(String username, Integer userId) {
+    public String generateJwtToken(String username, Long userId) {
         return Jwts.builder().setSubject(username).claim("userId", userId).setIssuedAt(new Date()).setExpiration(new Date(System.currentTimeMillis() + expiration)).signWith(secret, SignatureAlgorithm.HS256).compact();
     }
 
-    public boolean validateToken(String token) {
+    public boolean validateJwtToken(String token) {
         try {
             Jwts.parserBuilder().setSigningKey(secret).build().parseClaimsJws(token);
             return true;

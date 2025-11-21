@@ -5,8 +5,10 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ViewProfileRequestDto {
+public class RefreshAccessTokenResponseDto {
     
+    private boolean result;
     private String accessToken;
+    private RefreshTokenDto refreshToken;
 
 }

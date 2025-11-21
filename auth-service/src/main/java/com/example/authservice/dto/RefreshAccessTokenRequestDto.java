@@ -5,8 +5,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ViewProfileRequestDto {
+public class RefreshAccessTokenRequestDto {
     
-    private String accessToken;
+    private String refreshToken;
 
 }

@@ -8,6 +8,7 @@ import lombok.Setter;
 public class LoginResponseDto {
     
     private boolean result;
-    private String token;
+    private String accessToken;
+    private RefreshTokenDto refreshToken; 
 
 }

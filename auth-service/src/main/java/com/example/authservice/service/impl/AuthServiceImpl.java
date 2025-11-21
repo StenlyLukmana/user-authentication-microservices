@@ -15,13 +15,19 @@ import org.springframework.web.client.RestTemplate;
 
 import com.example.authservice.dto.LoginRequestDto;
 import com.example.authservice.dto.LoginResponseDto;
+import com.example.authservice.dto.RefreshTokenDto;
+import com.example.authservice.dto.RefreshAccessTokenRequestDto;
+import com.example.authservice.dto.RefreshAccessTokenResponseDto;
 import com.example.authservice.dto.RegisterRequestDto;
 import com.example.authservice.dto.RegisterResponseDto;
 import com.example.authservice.dto.UpdateProfileRequestDto;
 import com.example.authservice.dto.UpdateProfileResponseDto;
 import com.example.authservice.dto.ViewProfileRequestDto;
 import com.example.authservice.dto.ViewProfileResponseDto;
+import com.example.authservice.entity.RefreshToken;
+import com.example.authservice.exception.UnauthorizedException;
 import com.example.authservice.service.AuthService;
+import com.example.authservice.service.RefreshTokenService;
 import com.example.authservice.util.JwtUtil;
 
 import io.jsonwebtoken.Claims;
@@ -29,8 +35,12 @@ import io.jsonwebtoken.Claims;
 @Service
 public class AuthServiceImpl implements AuthService{
 
-    private final RestTemplate restTemplate;
-    private final String userServiceUrl;
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @Autowired
+    @Value("${services.user-service.url}")
+    private String userServiceUrl;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -38,10 +48,9 @@ public class AuthServiceImpl implements AuthService{
     @Autowired
     private JwtUtil jwtUtil;
 
-    public AuthServiceImpl(RestTemplate restTemplate, @Value("${services.user-service.url}") String userServiceUrl) {
-        this.restTemplate = restTemplate;
-        this.userServiceUrl = userServiceUrl;
-    }
+    @Autowired
+    private RefreshTokenService refreshTokenService;
+
 
     @Override
     public RegisterResponseDto register(RegisterRequestDto requestDto) {
@@ -73,30 +82,40 @@ public class AuthServiceImpl implements AuthService{
         }
 
         String password = (String) user.get("password");
-
+        
         if (!passwordEncoder.matches(requestDto.getPassword(), password)) {
             throw new RuntimeException("Invalid credentials");
         }
 
-        Integer userId = ((Number) user.get("id")).intValue();
-        String token = jwtUtil.generateToken(requestDto.getUsername(), userId);
+        Long userId = ((Number) user.get("id")).longValue();
+
+        String accessToken = jwtUtil.generateJwtToken(requestDto.getUsername(), userId);
+
+        RefreshToken refreshToken = refreshTokenService.createRefreshRoken(userId);
+
+        RefreshTokenDto refreshTokenDto = new RefreshTokenDto();
+        refreshTokenDto.setId(refreshToken.getId());
+        refreshTokenDto.setUserId(refreshToken.getUserId());
+        refreshTokenDto.setRefreshToken(refreshToken.getToken());
+        refreshTokenDto.setExpiryDate(refreshToken.getExpiryDate());
 
         LoginResponseDto responseDto = new LoginResponseDto();
         responseDto.setResult(true);
-        responseDto.setToken(token);
+        responseDto.setAccessToken(accessToken);
+        responseDto.setRefreshToken(refreshTokenDto);
         
         return responseDto;
     }
 
     @Override
     public ViewProfileResponseDto viewProfile(ViewProfileRequestDto requestDto) {
-        String token = requestDto.getToken();
+        String accessToken = requestDto.getAccessToken();
 
-        if(!jwtUtil.validateToken(token)) {
-            throw new RuntimeException("Invalid token");
+        if(!jwtUtil.validateJwtToken(accessToken)) {
+            throw new UnauthorizedException("Access Token is invalid or expired. Client must attempt refresh.");
         }
 
-        Claims claims = jwtUtil.extractClaims(token);
+        Claims claims = jwtUtil.extractClaims(accessToken);
         Integer userId = claims.get("userId", Integer.class);
 
         String url = userServiceUrl + "/users/" + userId;
@@ -118,13 +137,13 @@ public class AuthServiceImpl implements AuthService{
 
     @Override
     public UpdateProfileResponseDto updateProfile(UpdateProfileRequestDto requestDto) {
-        String token = requestDto.getToken();
+        String accessToken = requestDto.getAccessToken();
 
-        if(!jwtUtil.validateToken(token)) {
-            throw new RuntimeException("Invalid token");
+        if(!jwtUtil.validateJwtToken(accessToken)) {
+            throw new UnauthorizedException("Access Token is invalid or expired. Client must attempt refresh.");
         }
 
-        Claims claims = jwtUtil.extractClaims(token);
+        Claims claims = jwtUtil.extractClaims(accessToken);
         Integer userId = claims.get("userId", Integer.class);
 
         String url = userServiceUrl + "/users/" + userId;
@@ -145,6 +164,40 @@ public class AuthServiceImpl implements AuthService{
         responseDto.setName((String) user.get("name"));
         responseDto.setAge((Integer) user.get("age"));
         responseDto.setUpdatedAt((Long) user.get("updatedAt"));
+
+        return responseDto;
+    }
+
+    @Override
+    public RefreshAccessTokenResponseDto refreshAccessToken(RefreshAccessTokenRequestDto requestDto) {
+        String refreshTokenString = requestDto.getRefreshToken();
+
+        RefreshToken refreshToken = refreshTokenService.findByToken(refreshTokenString).map(refreshTokenService::verifyExpiration).orElseThrow(() -> new RuntimeException("Refresh token not found or is invalid: " + refreshTokenString));
+        
+        Long userId = refreshToken.getUserId();
+
+        String url = userServiceUrl + "/users/" + userId;
+
+        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(url, HttpMethod.GET, null, new ParameterizedTypeReference<Map<String, Object>>() {});
+        final Map<String, Object> responseBody = response.getBody();
+        Map<String, Object> user = (Map<String, Object>) responseBody.get("user");
+
+        if (user == null) {
+            throw new RuntimeException("User associated with refresh token not found.");
+        }
+
+        String newAccessToken = jwtUtil.generateJwtToken((String) user.get("username"), userId);
+
+        RefreshTokenDto refreshTokenDto = new RefreshTokenDto();
+        refreshTokenDto.setId(refreshToken.getId());
+        refreshTokenDto.setUserId(refreshToken.getUserId());
+        refreshTokenDto.setRefreshToken(refreshToken.getToken());
+        refreshTokenDto.setExpiryDate(refreshToken.getExpiryDate());
+
+        RefreshAccessTokenResponseDto responseDto = new RefreshAccessTokenResponseDto();
+        responseDto.setResult(true);
+        responseDto.setAccessToken(newAccessToken);
+        responseDto.setRefreshToken(refreshTokenDto);
 
         return responseDto;
     }

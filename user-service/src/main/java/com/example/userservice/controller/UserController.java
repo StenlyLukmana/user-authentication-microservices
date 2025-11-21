@@ -36,7 +36,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public GetUserResponseDto getUserById(@PathVariable("id") Integer userId) {
+    public GetUserResponseDto getUserById(@PathVariable("id") Long userId) {
         GetUserRequestDto requestDto = new GetUserRequestDto();
         requestDto.setId(userId);
         return userService.getUserById(requestDto);
@@ -50,7 +50,7 @@ public class UserController {
     }
 
     @PatchMapping("/{id}")
-    UpdateUserResponseDto updateUser(@PathVariable("id") Integer userId, @Valid @RequestBody UpdateUserRequestDto requestDto) {
+    UpdateUserResponseDto updateUser(@PathVariable("id") Long userId, @Valid @RequestBody UpdateUserRequestDto requestDto) {
         requestDto.setId(userId);
         return userService.updateUser(requestDto);
     }

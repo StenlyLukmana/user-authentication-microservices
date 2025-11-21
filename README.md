@@ -19,7 +19,7 @@ Microservices-based architecture project built using Spring Boot. Implementing J
 3. Token Validation: Ensure protected routes require a valid token.
 4. User Information Retrieval: Endpoint for fetching user details.
 5. User Profile Management: Allow users to update their profile information.
-
+6. Access Token Renewal: Allow access tokens (JWT) to be renewed once the token is expired.
 
 ---
 
@@ -57,7 +57,10 @@ services:
 
 jwt:
   secret: this-is-a-secure-encoded-secret-key
-  expiration: 3600000
+  expiration: 120000
+
+app:
+  jwtRefreshExpirationMs: 3600000
 ```
 user-service/src/main/resources/application.yml
 ```text
@@ -112,7 +115,7 @@ POST http://127.0.0.1:8080/auth/register
 ```text
 {
     "username": "Batman",
-    "password": "TheCapedCrusader",
+    "password": "Th3C@p3dCrus@d3r",
     "email": "wayne@example.com",
     "name": "Bruce Wayne",
     "age": 35
@@ -137,18 +140,24 @@ POST http://127.0.0.1:8080/auth/login
 ```text
 {
     "username": "Batman",
-    "password": "TheCapedCrusader"
+    "password": "Th3C@p3dCrus@d3r"
 }
 ```
 **Expected Response:**
 ```text
 {
     "result": true,
-    "token": "[Token]"
+    "accessToken": "[Access token]",
+    "refreshToken": {
+        "id": 1,
+        "userId": 1,
+        "refreshToken": "[Refresh token]",
+        "expiryDate": "[Date]"
+    }
 }
 ```
 #### 📓Note
-Copy the token given through the response in order to be able to access the User Information Retrieval and User Profile Management features.
+Copy both tokens (jwtToken and refresh token) given through the response in order to be able to access the User Information Retrieval, User Profile Management, and Access Token Renewal features.
 
 ### User Information Retrieval
 **Endpoint:**
@@ -160,15 +169,15 @@ GET http://127.0.0.1:8080/auth/profile
 Key              | Value
 Authorization    | [Paste Token Here]
 ```
-**Expected Response:**
+**Expected Response (timestamps may differ):**
 ```text
 {
     "username": "Batman",
     "email": "wayne@example.com",
     "name": "Bruce Wayne",
     "age": 35,
-    "createdAt": 1762452617880988,
-    "updatedAt": 1762452617880988
+    "createdAt": [Timestamp],
+    "updatedAt": [Timestamp]
 }
 ```
 
@@ -189,14 +198,45 @@ Content-Type     | application/json
     "username": "The Dark Knight"
 }
 ```
-**Expected Response:**
+**Expected Response (timestamps may differ):**
 ```text
 {
     "username": "The Dark Knight",
     "email": "wayne@example.com",
     "name": "Bruce Wayne",
     "age": 35,
-    "updatedAt": 1762453140092056
+    "updatedAt": [Timestamp]
+}
+```
+
+### Token Renewal
+**Endpoint:**
+```text
+POST http://127.0.0.1:8080/auth/refresh
+```
+**Headers:**
+```text
+Key              | Value
+Content-Type     | application/json
+```
+**Body(JSON):**
+```text
+{
+    "accessToken": "[Access Token]",
+    "refreshToken": "[Refresh Token]"
+}
+```
+**Expected Response:**
+```text
+{
+    "result": true,
+    "accessToken": "[Access token]",
+    "refreshToken": {
+        "id": 1,
+        "userId": 1,
+        "refreshToken": "[Refresh token]",
+        "expiryDate": "[Date]"
+    }
 }
 ```
 
@@ -204,22 +244,6 @@ Content-Type     | application/json
 **Endpoint:**
 ```text
 http://127.0.0.1:8082/users/1
-```
-**Expected Response:**
-```text
-{
-    "result": true,
-    "user": {
-        "id": 1,
-        "username": "The Dark Knight",
-        "password": "$2a$10$1mNFAKLZdWsgAqZkit/ozedpOHAFmpg7VHGc7fvYV1K8NgqcDG5zK",
-        "email": "wayne@example.com",
-        "name": "Bruce Wayne",
-        "age": 35,
-        "createdAt": 1762452617880988,
-        "updatedAt": 1762453140092056
-    }
-}
 ```
 #### 📓Note
 Other endpoints in user-services can also be directly tested, but are completely optional.
