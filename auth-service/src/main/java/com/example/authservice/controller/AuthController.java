@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.authservice.dto.LoginRequestDto;
 import com.example.authservice.dto.LoginResponseDto;
+import com.example.authservice.dto.LogoutRequestDto;
+import com.example.authservice.dto.LogoutResponseDto;
 import com.example.authservice.dto.RefreshAccessTokenRequestDto;
 import com.example.authservice.dto.RefreshAccessTokenResponseDto;
 import com.example.authservice.dto.RegisterRequestDto;
@@ -57,6 +59,13 @@ public class AuthController {
     public UpdateProfileResponseDto updateProfile(@RequestHeader("Authorization") String token, @Valid @RequestBody UpdateProfileRequestDto requestDto) {
         requestDto.setAccessToken(token);
         return authservice.updateProfile(requestDto);
+    }
+
+    @PostMapping("/logout")
+    public LogoutResponseDto logout(@RequestHeader("Authorization") String token) {
+        LogoutRequestDto requestDto = new LogoutRequestDto();
+        requestDto.setAccessToken(token);
+        return authservice.logout(requestDto);
     }
 
 }

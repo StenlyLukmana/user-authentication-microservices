@@ -1,5 +1,6 @@
 package com.example.authservice.service.impl;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,6 +16,8 @@ import org.springframework.web.client.RestTemplate;
 
 import com.example.authservice.dto.LoginRequestDto;
 import com.example.authservice.dto.LoginResponseDto;
+import com.example.authservice.dto.LogoutRequestDto;
+import com.example.authservice.dto.LogoutResponseDto;
 import com.example.authservice.dto.RefreshTokenDto;
 import com.example.authservice.dto.RefreshAccessTokenRequestDto;
 import com.example.authservice.dto.RefreshAccessTokenResponseDto;
@@ -28,6 +31,7 @@ import com.example.authservice.entity.RefreshToken;
 import com.example.authservice.exception.UnauthorizedException;
 import com.example.authservice.service.AuthService;
 import com.example.authservice.service.RefreshTokenService;
+import com.example.authservice.service.TokenBlacklistService;
 import com.example.authservice.util.JwtUtil;
 
 import io.jsonwebtoken.Claims;
@@ -50,6 +54,9 @@ public class AuthServiceImpl implements AuthService{
 
     @Autowired
     private RefreshTokenService refreshTokenService;
+
+    @Autowired
+    private TokenBlacklistService tokenBlacklistService;
 
 
     @Override
@@ -198,6 +205,41 @@ public class AuthServiceImpl implements AuthService{
         responseDto.setResult(true);
         responseDto.setAccessToken(newAccessToken);
         responseDto.setRefreshToken(refreshTokenDto);
+
+        return responseDto;
+    }
+
+    @Override
+    public LogoutResponseDto logout(LogoutRequestDto requestDto) {
+        String jwtId = jwtUtil.extractJwtId(requestDto.getAccessToken());
+
+        if (jwtId == null) {
+             throw new UnauthorizedException("Invalid or malformed token cannot be logged out.");
+        }
+
+        if(!jwtUtil.validateJwtToken(requestDto.getAccessToken())) {
+            LogoutResponseDto responseDto = new LogoutResponseDto();
+            responseDto.setMessage("Token already expired or invalid.");
+            return responseDto;
+        }
+
+        Long expirationTimeMs = jwtUtil.extractExpirationTimeMs(requestDto.getAccessToken());
+        Instant expiryInstant = Instant.ofEpochMilli(expirationTimeMs);
+
+        tokenBlacklistService.blacklistToken(jwtId, expiryInstant);
+
+        Claims claims = jwtUtil.extractClaims(requestDto.getAccessToken());
+        Long userId = claims.get("userId", Long.class);
+        refreshTokenService.deleteByUserId(userId);
+
+        String url = userServiceUrl + "/users/" + userId;
+
+        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(url, HttpMethod.GET, null, new ParameterizedTypeReference<Map<String, Object>>() {});
+        final Map<String, Object> responseBody = response.getBody();
+        Map<String, Object> user = (Map<String, Object>) responseBody.get("user");
+
+        LogoutResponseDto responseDto = new LogoutResponseDto();
+        responseDto.setMessage("Logged out of " + (String) user.get("username"));
 
         return responseDto;
     }

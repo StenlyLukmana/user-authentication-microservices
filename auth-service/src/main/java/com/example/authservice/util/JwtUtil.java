@@ -2,6 +2,7 @@ package com.example.authservice.util;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -25,7 +26,7 @@ public class JwtUtil {
     }
 
     public String generateJwtToken(String username, Long userId) {
-        return Jwts.builder().setSubject(username).claim("userId", userId).setIssuedAt(new Date()).setExpiration(new Date(System.currentTimeMillis() + expiration)).signWith(secret, SignatureAlgorithm.HS256).compact();
+        return Jwts.builder().setSubject(username).claim("userId", userId).setId(UUID.randomUUID().toString()).setIssuedAt(new Date()).setExpiration(new Date(System.currentTimeMillis() + expiration)).signWith(secret, SignatureAlgorithm.HS256).compact();
     }
 
     public boolean validateJwtToken(String token) {
@@ -40,5 +41,22 @@ public class JwtUtil {
 
     public Claims extractClaims(String token) {
         return Jwts.parserBuilder().setSigningKey(secret).build().parseClaimsJws(token).getBody();
+    }
+
+    public String extractJwtId(String token) {
+        try {
+            return extractClaims(token).getId();
+        } catch (JwtException e) {
+            return null;
+        }
+    }
+
+    public Long extractExpirationTimeMs(String token) {
+        try{
+            return extractClaims(token).getExpiration().getTime();
+        }
+        catch (JwtException e) {
+            return (long) 0;
+        }
     }
 }

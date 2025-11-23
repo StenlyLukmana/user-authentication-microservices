@@ -2,6 +2,8 @@ package com.example.authservice.service;
 
 import com.example.authservice.dto.LoginRequestDto;
 import com.example.authservice.dto.LoginResponseDto;
+import com.example.authservice.dto.LogoutRequestDto;
+import com.example.authservice.dto.LogoutResponseDto;
 import com.example.authservice.dto.RefreshAccessTokenRequestDto;
 import com.example.authservice.dto.RefreshAccessTokenResponseDto;
 import com.example.authservice.dto.RegisterRequestDto;
@@ -18,5 +20,6 @@ public interface AuthService {
     public ViewProfileResponseDto viewProfile(ViewProfileRequestDto requestDto);
     public UpdateProfileResponseDto updateProfile(UpdateProfileRequestDto requestDto);
     public RefreshAccessTokenResponseDto refreshAccessToken (RefreshAccessTokenRequestDto requestDto);
+    public LogoutResponseDto logout(LogoutRequestDto requestDto);
 
 }
