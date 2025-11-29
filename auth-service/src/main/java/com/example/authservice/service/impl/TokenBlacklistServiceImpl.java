@@ -3,8 +3,11 @@ package com.example.authservice.service.impl;
 import java.time.Instant;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.stereotype.Service;
+
 import com.example.authservice.service.TokenBlacklistService;
 
+@Service
 public class TokenBlacklistServiceImpl implements TokenBlacklistService{
 
     private final ConcurrentHashMap<String, Instant> blacklist = new ConcurrentHashMap<>();
