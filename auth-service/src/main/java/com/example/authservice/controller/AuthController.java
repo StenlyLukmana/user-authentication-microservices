@@ -1,6 +1,7 @@
 package com.example.authservice.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,7 +23,9 @@ import com.example.authservice.dto.UpdateProfileResponseDto;
 import com.example.authservice.dto.ViewProfileRequestDto;
 import com.example.authservice.dto.ViewProfileResponseDto;
 import com.example.authservice.service.AuthService;
+import com.example.authservice.util.IpUtil;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @Validated
@@ -32,6 +35,9 @@ public class AuthController {
     
     @Autowired
     private AuthService authservice;
+
+    @Autowired
+    private IpUtil ipUtil;
 
     @PostMapping("/refresh")
     public RefreshAccessTokenResponseDto refreshAccessToken(@Valid @RequestBody RefreshAccessTokenRequestDto requestDto) {
@@ -44,8 +50,9 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public LoginResponseDto login(@Valid @RequestBody LoginRequestDto requestDto) {
-        return authservice.login(requestDto);
+    public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDto requestDto, HttpServletRequest request) {
+        String ipAddress = ipUtil.getClientIp(request);
+        return ResponseEntity.ok(authservice.login(requestDto, ipAddress));
     }
 
     @GetMapping("/profile")

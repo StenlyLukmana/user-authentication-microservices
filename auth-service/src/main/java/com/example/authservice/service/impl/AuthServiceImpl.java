@@ -30,6 +30,7 @@ import com.example.authservice.dto.ViewProfileResponseDto;
 import com.example.authservice.entity.RefreshToken;
 import com.example.authservice.exception.UnauthorizedException;
 import com.example.authservice.service.AuthService;
+import com.example.authservice.service.RateLimitService;
 import com.example.authservice.service.RefreshTokenService;
 import com.example.authservice.service.TokenBlacklistService;
 import com.example.authservice.util.JwtUtil;
@@ -58,6 +59,9 @@ public class AuthServiceImpl implements AuthService{
     @Autowired
     private TokenBlacklistService tokenBlacklistService;
 
+    @Autowired
+    private RateLimitService rateLimitService;
+
 
     @Override
     public RegisterResponseDto register(RegisterRequestDto requestDto) {
@@ -77,11 +81,17 @@ public class AuthServiceImpl implements AuthService{
     }
 
     @Override
-    public LoginResponseDto login(LoginRequestDto requestDto) {
+    public LoginResponseDto login(LoginRequestDto requestDto, String ipAddress) {
         String url = userServiceUrl + "/users/username/" + requestDto.getUsername();
 
         ResponseEntity<Map<String, Object>> response = restTemplate.exchange(url, HttpMethod.GET, null, new ParameterizedTypeReference<Map<String, Object>>() {});
+        
         final Map<String, Object> responseBody = response.getBody();
+
+        if (responseBody == null) {
+            throw new RuntimeException("Invalid credentials");
+        }
+
         Map<String, Object> user = (Map<String, Object>) responseBody.get("user");
         
         if (user == null) {
@@ -93,6 +103,8 @@ public class AuthServiceImpl implements AuthService{
         if (!passwordEncoder.matches(requestDto.getPassword(), password)) {
             throw new RuntimeException("Invalid credentials");
         }
+
+        rateLimitService.resetBucket(ipAddress);
 
         Long userId = ((Number) user.get("id")).longValue();
 

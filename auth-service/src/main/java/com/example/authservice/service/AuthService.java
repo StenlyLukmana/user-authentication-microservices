@@ -16,7 +16,7 @@ import com.example.authservice.dto.ViewProfileResponseDto;
 public interface AuthService {
     
     public RegisterResponseDto register(RegisterRequestDto requestDto);
-    public LoginResponseDto login(LoginRequestDto requestDto);
+    public LoginResponseDto login(LoginRequestDto requestDto, String ipAddress);
     public ViewProfileResponseDto viewProfile(ViewProfileRequestDto requestDto);
     public UpdateProfileResponseDto updateProfile(UpdateProfileRequestDto requestDto);
     public RefreshAccessTokenResponseDto refreshAccessToken (RefreshAccessTokenRequestDto requestDto);
