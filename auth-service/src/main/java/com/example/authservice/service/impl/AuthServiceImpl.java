@@ -28,7 +28,9 @@ import com.example.authservice.dto.UpdateProfileResponseDto;
 import com.example.authservice.dto.ViewProfileRequestDto;
 import com.example.authservice.dto.ViewProfileResponseDto;
 import com.example.authservice.entity.RefreshToken;
-import com.example.authservice.exception.UnauthorizedException;
+import com.example.authservice.exception.InvalidCredentialsException;
+import com.example.authservice.exception.JwtException;
+import com.example.authservice.exception.TokenRefreshException;
 import com.example.authservice.service.AuthService;
 import com.example.authservice.service.RateLimitService;
 import com.example.authservice.service.RefreshTokenService;
@@ -88,20 +90,16 @@ public class AuthServiceImpl implements AuthService{
         
         final Map<String, Object> responseBody = response.getBody();
 
-        if (responseBody == null) {
-            throw new RuntimeException("Invalid credentials");
+        if (responseBody == null || responseBody.get("user") == null) {
+            throw new InvalidCredentialsException();
         }
 
         Map<String, Object> user = (Map<String, Object>) responseBody.get("user");
-        
-        if (user == null) {
-            throw new RuntimeException("Invalid credentials");
-        }
 
         String password = (String) user.get("password");
         
         if (!passwordEncoder.matches(requestDto.getPassword(), password)) {
-            throw new RuntimeException("Invalid credentials");
+            throw new InvalidCredentialsException();
         }
 
         rateLimitService.resetBucket(ipAddress);
@@ -131,7 +129,7 @@ public class AuthServiceImpl implements AuthService{
         String accessToken = requestDto.getAccessToken();
 
         if(!jwtUtil.validateJwtToken(accessToken)) {
-            throw new UnauthorizedException("Access Token is invalid or expired. Client must attempt refresh.");
+            throw new JwtException("Access Token is invalid or expired. Client must attempt refresh.");
         }
 
         Claims claims = jwtUtil.extractClaims(accessToken);
@@ -159,7 +157,7 @@ public class AuthServiceImpl implements AuthService{
         String accessToken = requestDto.getAccessToken();
 
         if(!jwtUtil.validateJwtToken(accessToken)) {
-            throw new UnauthorizedException("Access Token is invalid or expired. Client must attempt refresh.");
+            throw new JwtException("Access Token is invalid or expired. Client must attempt refresh.");
         }
 
         Claims claims = jwtUtil.extractClaims(accessToken);
@@ -202,7 +200,7 @@ public class AuthServiceImpl implements AuthService{
         Map<String, Object> user = (Map<String, Object>) responseBody.get("user");
 
         if (user == null) {
-            throw new RuntimeException("User associated with refresh token not found.");
+            throw new TokenRefreshException("User associated with refresh token not found.");
         }
 
         String newAccessToken = jwtUtil.generateJwtToken((String) user.get("username"), userId);
@@ -226,7 +224,7 @@ public class AuthServiceImpl implements AuthService{
         String jwtId = jwtUtil.extractJwtId(requestDto.getAccessToken());
 
         if (jwtId == null) {
-             throw new UnauthorizedException("Invalid or malformed token cannot be logged out.");
+             throw new JwtException("Invalid or malformed token cannot be logged out.");
         }
 
         if(!jwtUtil.validateJwtToken(requestDto.getAccessToken())) {
