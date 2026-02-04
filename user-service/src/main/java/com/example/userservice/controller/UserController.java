@@ -1,5 +1,7 @@
 package com.example.userservice.controller;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -7,10 +9,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.userservice.dto.CreateUserRequestDto;
 import com.example.userservice.dto.CreateUserResponseDto;
-import com.example.userservice.dto.GetUserRequestDto;
-import com.example.userservice.dto.GetUserResponseDto;
 import com.example.userservice.dto.UpdateUserRequestDto;
 import com.example.userservice.dto.UpdateUserResponseDto;
+import com.example.userservice.dto.UserDto;
+import com.example.userservice.exception.GlobalExceptionHandler;
+import com.example.userservice.exception.ResourceNotFoundException;
 import com.example.userservice.service.UserService;
 
 import jakarta.validation.Valid;
@@ -36,17 +39,13 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public GetUserResponseDto getUserById(@PathVariable("id") Long userId) {
-        GetUserRequestDto requestDto = new GetUserRequestDto();
-        requestDto.setId(userId);
-        return userService.getUserById(requestDto);
+    public UserDto getUserById(@PathVariable("id") Long userId) {
+        return userService.getUserById(userId).orElseThrow(() -> new ResourceNotFoundException("User id " + userId));
     }
 
     @GetMapping("/username/{username}")
-    public GetUserResponseDto getUserByUsername(@PathVariable("username") String username) {
-        GetUserRequestDto requestDto = new GetUserRequestDto();
-        requestDto.setUsername(username);
-        return userService.getUserByUsername(requestDto);
+    public UserDto getUserByUsername(@PathVariable("username") String username) {
+        return userService.getUserByUsername(username).orElseThrow(() ->new ResourceNotFoundException("Username " + username));
     }
 
     @PatchMapping("/{id}")

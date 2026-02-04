@@ -1,43 +1,31 @@
 package com.example.userservice.service.impl;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.userservice.dto.CreateUserRequestDto;
 import com.example.userservice.dto.CreateUserResponseDto;
-import com.example.userservice.dto.GetUserRequestDto;
-import com.example.userservice.dto.GetUserResponseDto;
 import com.example.userservice.dto.UpdateUserRequestDto;
 import com.example.userservice.dto.UpdateUserResponseDto;
 import com.example.userservice.dto.UserDto;
 import com.example.userservice.entity.User;
+import com.example.userservice.mapper.UserMapper;
 import com.example.userservice.repository.UserRepository;
 import com.example.userservice.service.UserService;
 
 @Service
 public class UserServiceImpl implements UserService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    private Long nowInEpochMicroSecond() {
-        return ChronoUnit.MICROS.between(Instant.EPOCH, Instant.now());
-    }
-
-    private UserDto convertUserToUserDto(User user) {
-        UserDto userDto = new UserDto();
-        BeanUtils.copyProperties(user, userDto);
-
-        return userDto;
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.userMapper = new UserMapper();
     }
 
     @Override
@@ -49,39 +37,23 @@ public class UserServiceImpl implements UserService {
         user.setName(requestDto.getName());
         user.setAge(requestDto.getAge());
 
-        final Long timestampInMicroSecond = nowInEpochMicroSecond();
-        user.setCreatedAt(timestampInMicroSecond);
-        user.setUpdatedAt(timestampInMicroSecond);
-
         user = userRepository.save(user);
 
         CreateUserResponseDto responseDto = new CreateUserResponseDto();
         responseDto.setResult(true);
-        responseDto.setUser(convertUserToUserDto(user));
+        responseDto.setUser(userMapper.toDto(user));
 
         return responseDto;
     }
 
     @Override
-    public GetUserResponseDto getUserById(GetUserRequestDto requestDto) {
-        Optional<User> userOpt = userRepository.findById(requestDto.getId());
-
-        GetUserResponseDto responseDto = new GetUserResponseDto();
-        responseDto.setResult(userOpt.isPresent());
-        userOpt.ifPresent(user -> responseDto.setUser(convertUserToUserDto(user)));
-
-        return responseDto;
+    public Optional<UserDto> getUserById(Long id) {
+        return userRepository.findById(id).map(userMapper::toDto);
     }
 
     @Override
-    public GetUserResponseDto getUserByUsername(GetUserRequestDto requestDto) {
-        Optional<User> userOpt = userRepository.findByUsername(requestDto.getUsername());
-
-        GetUserResponseDto responseDto = new GetUserResponseDto();
-        responseDto.setResult(userOpt.isPresent());
-        userOpt.ifPresent(user->responseDto.setUser(convertUserToUserDto(user)));
-
-        return responseDto;
+    public Optional<UserDto> getUserByUsername(String username) {
+        return userRepository.findByUsername(username).map(userMapper::toDto);
     }
 
     @Override
@@ -101,13 +73,12 @@ public class UserServiceImpl implements UserService {
         if (requestDto.getAge() != null) {
             user.setAge(requestDto.getAge());
         }
-        user.setUpdatedAt(nowInEpochMicroSecond());
 
         user = userRepository.save(user);
 
         UpdateUserResponseDto responseDto = new UpdateUserResponseDto();
         responseDto.setResult(true);
-        responseDto.setUser(convertUserToUserDto(user));
+        responseDto.setUser(userMapper.toDto(user));
 
         return responseDto;
     }
