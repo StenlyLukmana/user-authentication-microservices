@@ -4,8 +4,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.example.userservice.dto.CreateUserRequestDto;
 import com.example.userservice.dto.CreateUserResponseDto;
@@ -18,20 +17,16 @@ import com.example.userservice.service.UserService;
 
 import jakarta.validation.Valid;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-
 
 @Validated
 @RestController
 @RequestMapping("/users")
 public class UserController {
-    
-    @Autowired
-    private UserService userService;
+
+    private final UserService userService;
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @PostMapping
     public CreateUserResponseDto createUser(@Valid @RequestBody CreateUserRequestDto requestDto) {
@@ -39,19 +34,24 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public UserDto getUserById(@PathVariable("id") Long userId) {
-        return userService.getUserById(userId).orElseThrow(() -> new ResourceNotFoundException("User id " + userId));
+    public UserDto getUserById(@PathVariable("id") Long id) {
+        return userService.getUserById(id);
     }
 
     @GetMapping("/username/{username}")
     public UserDto getUserByUsername(@PathVariable("username") String username) {
-        return userService.getUserByUsername(username).orElseThrow(() ->new ResourceNotFoundException("Username " + username));
+        return userService.getUserByUsername(username);
     }
 
     @PatchMapping("/{id}")
-    UpdateUserResponseDto updateUser(@PathVariable("id") Long userId, @Valid @RequestBody UpdateUserRequestDto requestDto) {
+    public UpdateUserResponseDto updateUser(@PathVariable("id") Long userId, @Valid @RequestBody UpdateUserRequestDto requestDto) {
         requestDto.setId(userId);
         return userService.updateUser(requestDto);
+    }
+
+    @DeleteMapping("/{id}")
+    public String deleteUser(@PathVariable("id") Long id) {
+        return userService.deleteUser(id);
     }
 
 }

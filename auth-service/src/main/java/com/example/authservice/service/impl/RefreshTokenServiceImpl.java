@@ -56,8 +56,8 @@ public class RefreshTokenServiceImpl implements RefreshTokenService{
 
     @Override
     @Transactional
-    public int deleteByUserId(Long userId) {
-        return refreshTokenRepository.deleteByUserId(userId);
+    public void deleteByUserId(Long userId) {
+        refreshTokenRepository.deleteByUserId(userId);
     }
 
 }

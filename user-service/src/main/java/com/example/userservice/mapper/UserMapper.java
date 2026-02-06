@@ -9,8 +9,6 @@ import com.example.userservice.entity.User;
 public class UserMapper {
     
     public UserDto toDto(User user) {
-        if(user == null) return null;
-
         UserDto userDto = new UserDto();
         userDto.setId(user.getId());
         userDto.setUsername(user.getUsername());

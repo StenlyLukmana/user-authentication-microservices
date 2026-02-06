@@ -2,6 +2,7 @@ package com.example.userservice.service.impl;
 
 import java.util.Optional;
 
+import com.example.userservice.exception.ResourceNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -47,20 +48,29 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<UserDto> getUserById(Long id) {
-        return userRepository.findById(id).map(userMapper::toDto);
+    public UserDto getUserById(Long id) {
+        return userRepository
+                .findById(id)
+                .map(userMapper::toDto)
+                .orElseThrow(() -> new ResourceNotFoundException("User with id " + id));
     }
 
     @Override
-    public Optional<UserDto> getUserByUsername(String username) {
-        return userRepository.findByUsername(username).map(userMapper::toDto);
+    public UserDto getUserByUsername(String username) {
+        return userRepository
+                .findByUsername(username)
+                .map(userMapper::toDto)
+                .orElseThrow(() -> new ResourceNotFoundException("User with username " + username));
     }
 
     @Override
     public UpdateUserResponseDto updateUser(UpdateUserRequestDto requestDto) {
-        Optional<User> userOpt = userRepository.findById(requestDto.getId());
 
-        User user = userOpt.get();
+        Long id = requestDto.getId();
+        User user = userRepository
+                .findById(requestDto.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("User with id " + id));;
+
         if(requestDto.getUsername() != null) {
             user.setUsername(requestDto.getUsername());
         }
@@ -81,6 +91,13 @@ public class UserServiceImpl implements UserService {
         responseDto.setUser(userMapper.toDto(user));
 
         return responseDto;
+    }
+
+    @Override
+    public String deleteUser(Long id) {
+
+
+        return "User";
     }
 
 }

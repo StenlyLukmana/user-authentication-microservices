@@ -11,8 +11,9 @@ import com.example.userservice.dto.UserDto;
 public interface UserService {
     
     CreateUserResponseDto createUser(CreateUserRequestDto requestDto);
-    Optional<UserDto> getUserById(Long id);
-    Optional<UserDto> getUserByUsername(String username);
+    UserDto getUserById(Long id);
+    UserDto getUserByUsername(String username);
     UpdateUserResponseDto updateUser(UpdateUserRequestDto requestDto);
-    
+    String deleteUser(Long id);
+
 }

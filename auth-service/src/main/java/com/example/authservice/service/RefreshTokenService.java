@@ -9,6 +9,6 @@ public interface RefreshTokenService {
     public RefreshToken createRefreshRoken(Long userId);
     public Optional<RefreshToken> findByToken(String token);
     public RefreshToken verifyExpiration(RefreshToken refreshToken);
-    public int deleteByUserId(Long userId);
+    public void deleteByUserId(Long userId);
     
 }
